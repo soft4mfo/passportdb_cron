@@ -1,8 +1,17 @@
 #!/bin/bash
+start_date=$(date)
+echo $start_date > /tmp/start_script.txt
 set -e
 cd /tmp/
 file_http_time=$(curl -s -v -X HEAD https://xn--b1agjhrfhd.xn--b1ab2a0a.xn--b1aew.xn--p1ai/upload/expired-passports/list_of_expired_passports.csv.bz2 2>&1 | grep  -i '^< Last-Modified:'| cut -d" " -f 3-)
 epoch_file_time=$(date -d "$file_http_time" +%s)
+
+baza_file_time=$(PGPASSWORD=$POSTGRES_PASSWORD psql -qtAX -U $POSTGRES_USER -h $POSTGRES_HOST -d $POSTGRES_DB -c "SELECT date_d FROM public.app_date_download;")
+if [[ -z $baza_file_time  ]]
+then
+  baza_file_time=0
+  PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "INSERT INTO public.app_date_download VALUES(1,0);"
+fi
 if [[ $epoch_file_time -gt $(PGPASSWORD=$POSTGRES_PASSWORD psql -qtAX -U $POSTGRES_USER -h $POSTGRES_HOST -d $POSTGRES_DB -c "SELECT date_d FROM public.app_date_download;") ]]
 then
    wget https://xn--b1agjhrfhd.xn--b1ab2a0a.xn--b1aew.xn--p1ai/upload/expired-passports/list_of_expired_passports.csv.bz2
@@ -20,7 +29,3 @@ then
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "UPDATE public.app_date_download SET date_d=$epoch_file_time;"
 
 fi
-
-	
-
-
