@@ -6,6 +6,6 @@ RUN apk update && apk add postgresql && apk add bash && apk add curl && apk add 
 
 RUN rm -rf /var/cache/apk/*
 
-COPY passport /etc/periodic/hourly
+COPY passport /etc/periodic/daily
 
 CMD crond -l 2 -f
