@@ -8,6 +8,6 @@ done
 
 echo "PostgreSQL started"
 
-exec /etc/periodic/daily/start
+/etc/periodic/daily/start
 
-exec crond -l 2 -f
+crond -f -L 2
