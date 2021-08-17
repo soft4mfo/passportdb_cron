@@ -8,4 +8,9 @@ RUN rm -rf /var/cache/apk/*
 
 COPY passport /etc/periodic/daily
 
-CMD crond -l 2 -f
+RUN mkdir /app
+
+COPY entrypoint.sh /app
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+
