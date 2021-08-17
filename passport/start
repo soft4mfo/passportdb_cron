@@ -3,6 +3,7 @@ start_date=$(date)
 echo $start_date > /tmp/start_script.txt
 set -e
 cd /tmp/
+rm -f -- list_of_expired_passports.csv 
 file_http_time=$(curl -s -v -X HEAD https://xn--b1agjhrfhd.xn--b1ab2a0a.xn--b1aew.xn--p1ai/upload/expired-passports/list_of_expired_passports.csv.bz2 2>&1 | grep  -i '^< Last-Modified:'| cut -d" " -f 3-)
 epoch_file_time=$(date -d "$file_http_time" +%s)
 
