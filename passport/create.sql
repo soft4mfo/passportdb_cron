@@ -11,10 +11,17 @@ TABLESPACE pg_default;
 
 \copy t_app_passports(passp_series,passp_number) FROM '/tmp/list_of_expired_passports.csv' DELIMITER ',' ENCODING 'UTF8' CSV HEADER;
 
-DROP TABLE IF EXISTS app_passports;
-ALTER TABLE IF EXISTS t_app_passports RENAME TO app_passports;
-DROP INDEX IF EXISTS public.app_passpor_passp_s_62f52b_idx;
-CREATE INDEX app_passpor_passp_s_62f52b_idx
-    ON public.app_passports USING btree
+
+
+DROP INDEX IF EXISTS public.t_app_passpor_passp_s_62f52b_idx;
+CREATE INDEX t_app_passpor_passp_s_62f52b_idx
+    ON public.t_app_passports USING btree
     (passp_series COLLATE pg_catalog."default" ASC NULLS LAST, passp_number COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
+
+
+DROP TABLE IF EXISTS app_passports;
+ALTER TABLE IF EXISTS t_app_passports RENAME TO app_passports;
+
+DROP INDEX IF EXISTS public.app_passpor_passp_s_62f52b_idx;
+ALTER INDEX IF EXISTS t_app_passpor_passp_s_62f52b_idx RENAME TO app_passpor_passp_s_62f52b_idx;
