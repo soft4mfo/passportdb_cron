@@ -4,7 +4,6 @@ set -e
 # Get current script dir
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-rm -f -- /tmp/list_of_expired_passports.csv 
 file_http_time=$(curl -s -v -X HEAD https://xn--b1agjhrfhd.xn--b1ab2a0a.xn--b1aew.xn--p1ai/upload/expired-passports/list_of_expired_passports.csv.bz2 2>&1 | grep  -i '^< Last-Modified:'| cut -d" " -f 3-)
 epoch_file_time=$(date -d "$file_http_time" +%s)
 
@@ -16,11 +15,12 @@ then
 fi
 if [[ $epoch_file_time -gt $(PGPASSWORD=$POSTGRES_PASSWORD psql -qtAX -U $POSTGRES_USER -h $POSTGRES_HOST -d $POSTGRES_DB -c "SELECT date_d FROM public.app_date_download;") ]]
 then
-   echo "`date "+%Y-%m-%d %H:%M:%S"` Starting to download file..."
+   echo "Starting to download file..."
+   rm -f -- /tmp/list_of_expired_passports.csv.bz2
    wget -P /tmp/ -nv https://xn--b1agjhrfhd.xn--b1ab2a0a.xn--b1aew.xn--p1ai/upload/expired-passports/list_of_expired_passports.csv.bz2
-   echo "`date "+%Y-%m-%d %H:%M:%S"` Extracting file..."
-   bzip2 -d /tmp/list_of_expired_passports.csv.bz2
-   echo "`date "+%Y-%m-%d %H:%M:%S"` Inserting data in DB..."
+   echo "Extracting file..."
+   bzip2 -d -f /tmp/list_of_expired_passports.csv.bz2
+   echo "Inserting data in DB..."
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "DROP SEQUENCE IF EXISTS public.app_passports_id_seq CASCADE;"
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "CREATE SEQUENCE public.app_passports_id_seq
      INCREMENT 1
@@ -30,8 +30,8 @@ then
      CACHE 1;"
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "ALTER SEQUENCE public.app_passports_id_seq OWNER TO $POSTGRES_USER;"
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -f "$SCRIPT_DIR/create.sql"
-   rm /tmp/list_of_expired_passports.csv
+   rm -f -- /tmp/list_of_expired_passports.csv
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "UPDATE public.app_date_download SET date_d=$epoch_file_time;"
-   echo "`date "+%Y-%m-%d %H:%M:%S"` Update is completed!"
-else echo "`date "+%Y-%m-%d %H:%M:%S"` File is checked. Passport DB is up to date!"
+   echo "Update is completed!"
+else echo "File is checked. Passport DB is up to date!"
 fi

@@ -2,11 +2,11 @@ FROM alpine:3.13
 
 LABEL org.opencontainers.image.source="https://github.com/soft4mfo/passportdb_cron"
 
-RUN apk update && apk add postgresql && apk add bash && apk add curl && apk add wget && apk add bzip2 && apk add coreutils
+RUN apk update && apk add postgresql bash curl wget bzip2 coreutils
 
 RUN rm -rf /var/cache/apk/*
 
-COPY passport /etc/periodic/daily
+COPY passport /etc/periodic/hourly
 
 RUN mkdir /app
 
