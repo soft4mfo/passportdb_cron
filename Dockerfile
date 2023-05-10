@@ -6,7 +6,11 @@ RUN apk update && apk add postgresql bash curl wget bzip2 coreutils
 
 RUN rm -rf /var/cache/apk/*
 
-COPY passport /etc/periodic/hourly
+RUN mkdir /etc/periodic/2hours
+
+RUN echo "0 */2 * * * run-parts /etc/periodic/2hours" >> /etc/crontabs/root
+
+COPY passport /etc/periodic/2hours
 
 RUN mkdir /app
 
