@@ -33,5 +33,10 @@ then
    rm -f -- /tmp/list_of_expired_passports.csv
    PGPASSWORD=$POSTGRES_PASSWORD psql --set=POSTGRES_USER="$POSTGRES_USER" -U $POSTGRES_USER  -h $POSTGRES_HOST -d $POSTGRES_DB -c "UPDATE public.app_date_download SET date_d=$epoch_file_time;"
    echo "Update is completed!"
+
+   prometheus_metric="# HELP passportdb_date The datetime of the passport data file
+# TYPE passportdb_date counter
+passportdb_date $epoch_file_time"
+   echo "$prometheus_metric" > /app/prometheus/metrics   
 else echo "File is checked. Passport DB is up to date!"
 fi
